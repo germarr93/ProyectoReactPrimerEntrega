@@ -11,7 +11,11 @@ export default function useLocalStorage(key, initial) {
     }
   })
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value))
+    try {
+      localStorage.setItem(key, JSON.stringify(value))
+    } catch {
+      // sin almacenamiento: la app sigue funcionando sin guardar
+    }
   }, [key, value])
   return [value, setValue]
 }
