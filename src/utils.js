@@ -22,3 +22,16 @@ export function monthCells(year, month) {
   for (let d = 1; d <= total; d++) cells.push(toKey(new Date(year, month, d)))
   return cells
 }
+
+// Lunes = 0 ... Domingo = 6
+export const weekday = (k) => (fromKey(k).getDay() + 6) % 7
+
+// Actividades de un día: eventos sueltos + rutinas semanales que caen ese día
+export function dayItems(date, events, routines, routineDone) {
+  const wd = weekday(date)
+  const single = events.filter((e) => e.date === date)
+  const repeated = routines
+    .filter((r) => r.days.includes(wd))
+    .map((r) => ({ ...r, date, fromRoutine: true, done: (routineDone[date] || []).includes(r.id) }))
+  return [...single, ...repeated].sort((a, b) => a.time.localeCompare(b.time))
+}

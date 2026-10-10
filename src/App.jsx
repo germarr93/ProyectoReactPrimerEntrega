@@ -6,8 +6,10 @@ import Calendar from './components/Calendar'
 import Agenda from './components/Agenda'
 import Exercises from './components/Exercises'
 import Diet from './components/Diet'
+import Routines from './components/Routines'
+import Clock from './components/Clock'
 
-const TABS = ['Calendario', 'Ejercicios', 'Dieta']
+const TABS = ['Calendario', 'Rutinas', 'Ejercicios', 'Dieta']
 
 export default function App() {
   const [tab, setTab] = useState('Calendario')
@@ -16,6 +18,8 @@ export default function App() {
   const [events, setEvents] = useLocalStorage('fit-events', []) // {id,date,time,type,title,minutes,done}
   const [exercises, setExercises] = useLocalStorage('fit-exercises', DEFAULT_EXERCISES)
   const [rules, setRules] = useLocalStorage('fit-rules', DEFAULT_RULES)
+  const [routines, setRoutines] = useLocalStorage('fit-routines', []) // {id,days,time,type,title,minutes}
+  const [routineDone, setRoutineDone] = useLocalStorage('fit-routine-done', {}) // { fecha: [idRutina] }
   const [checks, setChecks] = useLocalStorage('fit-checks', {}) // { fecha: [idRegla,...] }
 
   const addEvent = (ev) => setEvents((prev) => [...prev, ev])
@@ -23,10 +27,17 @@ export default function App() {
     setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, done: !e.done } : e)))
   const removeEvent = (id) => setEvents((prev) => prev.filter((e) => e.id !== id))
 
+  const toggleRoutine = (id, date) =>
+    setRoutineDone((prev) => {
+      const cur = prev[date] || []
+      return { ...prev, [date]: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] }
+    })
+
   return (
     <div className="app">
       <header>
         <h1>💪 FitPlan</h1>
+        <Clock />
         <nav>
           {TABS.map((t) => (
             <button key={t} className={t === tab ? 'active' : ''} onClick={() => setTab(t)}>
@@ -39,16 +50,20 @@ export default function App() {
       <main>
         {tab === 'Calendario' && (
           <div className="grid2">
-            <Calendar events={events} selected={selected} onSelect={setSelected} />
+            <Calendar events={events} routines={routines} selected={selected} onSelect={setSelected} />
             <Agenda
               date={selected}
               events={events}
+              routines={routines}
+              routineDone={routineDone}
+              onToggleRoutine={toggleRoutine}
               onAdd={addEvent}
               onToggle={toggleEvent}
               onRemove={removeEvent}
             />
           </div>
         )}
+        {tab === 'Rutinas' && <Routines routines={routines} setRoutines={setRoutines} />}
         {tab === 'Ejercicios' && (
           <Exercises
             exercises={exercises}

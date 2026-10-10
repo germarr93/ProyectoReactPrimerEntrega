@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { DAYS, fromKey, monthCells, toKey } from '../utils'
+import { DAYS, dayItems, fromKey, monthCells, toKey } from '../utils'
 
-export default function Calendar({ events, selected, onSelect }) {
+export default function Calendar({ events, routines, selected, onSelect }) {
   const sel = fromKey(selected)
   const [view, setView] = useState({ y: sel.getFullYear(), m: sel.getMonth() })
   const [today] = useState(() => toKey(new Date()))
@@ -25,14 +25,14 @@ export default function Calendar({ events, selected, onSelect }) {
         ))}
         {monthCells(view.y, view.m).map((k, i) => {
           if (!k) return <div key={i} />
-          const dayEvents = events.filter((e) => e.date === k)
+          const dayEvents = dayItems(k, events, routines, {})
           const cls = ['cal-day', k === selected && 'selected', k === today && 'today'].filter(Boolean).join(' ')
           return (
             <button key={k} className={cls} onClick={() => onSelect(k)}>
               {Number(k.slice(8))}
               <span className="dots">
                 {dayEvents.slice(0, 4).map((e) => (
-                  <i key={e.id} className={e.type} />
+                  <i key={e.id + (e.fromRoutine ? 'r' : '')} className={e.type} />
                 ))}
               </span>
             </button>

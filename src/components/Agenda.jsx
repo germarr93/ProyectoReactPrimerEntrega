@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { formatLong, uid } from '../utils'
+import { dayItems, formatLong, uid } from '../utils'
 
-export default function Agenda({ date, events, onAdd, onToggle, onRemove }) {
+export default function Agenda({ date, events, routines, routineDone, onAdd, onToggle, onToggleRoutine, onRemove }) {
   const [form, setForm] = useState({ time: '08:00', type: 'ejercicio', title: '', minutes: 30 })
-  const day = events.filter((e) => e.date === date).sort((a, b) => a.time.localeCompare(b.time))
+  const day = dayItems(date, events, routines, routineDone)
   const done = day.filter((e) => e.done).length
 
   const submit = (e) => {
@@ -20,12 +20,14 @@ export default function Agenda({ date, events, onAdd, onToggle, onRemove }) {
 
       <ul className="list">
         {day.map((e) => (
-          <li key={e.id} className={e.done ? 'done' : ''}>
-            <input type="checkbox" checked={e.done} onChange={() => onToggle(e.id)} />
+          <li key={e.id + (e.fromRoutine ? 'r' : '')} className={e.done ? 'done' : ''}>
+            <input type="checkbox" checked={e.done} onChange={() => (e.fromRoutine ? onToggleRoutine(e.id, date) : onToggle(e.id))} />
             <strong>{e.time}</strong>
             <span className={`tag ${e.type}`}>{e.type === 'ejercicio' ? '🏋️' : '🍽️'}</span>
-            <span className="grow">{e.title}{e.type === 'ejercicio' && ` · ${e.minutes} min`}</span>
-            <button className="ghost" onClick={() => onRemove(e.id)} aria-label="Eliminar">✕</button>
+            <span className="grow">{e.title}{e.fromRoutine && ' 🔁'}{e.type === 'ejercicio' && ` · ${e.minutes} min`}</span>
+            {!e.fromRoutine && (
+              <button className="ghost" onClick={() => onRemove(e.id)} aria-label="Eliminar">✕</button>
+            )}
           </li>
         ))}
       </ul>
